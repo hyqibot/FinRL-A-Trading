@@ -1,0 +1,54 @@
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+.pytest_cache
+.coverage
+.tox
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+.venv
+venv/
+ENV/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project specific
+data/
+logs/
+*.db
+*.sqlite
+.env
+.env.local
+
+# Documentation
+docs/_build/
+*.md
+!README.md
+
+# Notebooks (if not needed in container)
+*.ipynb
+
+# Test files
+tests/
+test_*.py
+*_test.py

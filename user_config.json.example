@@ -1,0 +1,20 @@
+{
+  "TDX_CONFIG": {
+    "tdx_dir": "D:\\dgzq"
+  },
+  "DATA_CONFIG": {
+    "start_year": 2018
+  },
+  "CLS_CONFIG": {
+    "enabled": true,
+    "page_size": 50,
+    "max_pages": 3,
+    "openai_model": "gpt-4o-mini",
+    "cache_dir": "data/cls_news"
+  },
+  "BROKER_CONFIG": {
+    "ths_path": "C:\\path\\to\\xiadan.exe",
+    "xq_json": "xq.json",
+    "qmt_path": "C:\\path\\to\\userdata_mini"
+  }
+}

@@ -1,0 +1,68 @@
+version: '3.8'
+
+services:
+  finrl-trading:
+    build: .
+    container_name: finrl-trading-app
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - ./.env:/app/.env
+    environment:
+      - ENVIRONMENT=production
+      - WEB_HOST=0.0.0.0
+      - WEB_PORT=8501
+      - PYTHONPATH=/app/src:/app
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import sys; sys.path.insert(0, '/app/src'); import config; print('OK')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - finrl-network
+
+  # Optional: PostgreSQL database for production use
+  postgres:
+    image: postgres:15-alpine
+    container_name: finrl-postgres
+    environment:
+      POSTGRES_DB: finrl_trading
+      POSTGRES_USER: finrl_user
+      POSTGRES_PASSWORD: finrl_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-db:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+    profiles:
+      - production
+    networks:
+      - finrl-network
+
+  # Optional: Redis for advanced caching
+  redis:
+    image: redis:7-alpine
+    container_name: finrl-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    profiles:
+      - production
+    networks:
+      - finrl-network
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  finrl-network:
+    driver: bridge
