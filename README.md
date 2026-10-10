@@ -2,10 +2,6 @@
 
 <h1 style="font-family: SimHei, Heiti SC, Microsoft YaHei, sans-serif; font-weight: 900; font-size: 2.2em;">A 股Ai原生训练-交易框架： An AI-Native Modular Infrastructure for A share Quantitative Trading</h1>
 
-## FinRL-X
-
-### An AI-Native Modular Infrastructure for Quantitative Trading
-
 <img src="https://github.com/user-attachments/assets/80fe89bb-fb09-4267-b29a-76030512f8cf" width="420">
 
 [![Paper](https://img.shields.io/badge/Paper-arXiv_2603.21330-b31b1b?style=for-the-badge)](https://arxiv.org/abs/2603.21330)
