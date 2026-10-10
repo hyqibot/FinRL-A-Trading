@@ -1,9 +1,8 @@
-A 股Ai原生训练-交易框架： An AI-Native Modular Infrastructure for A share Quantitative Trading
-
-
 <div align="center">
 
-# FinRL-X
+<h1 style="font-family: SimHei, Heiti SC, Microsoft YaHei, sans-serif; font-weight: 900; font-size: 2.2em;">A 股Ai原生训练-交易框架： An AI-Native Modular Infrastructure for A share Quantitative Trading</h1>
+
+## FinRL-X
 
 ### An AI-Native Modular Infrastructure for Quantitative Trading
 
@@ -140,7 +139,8 @@ An A-share adaptation of FinRL-Trading—keeping weight-centric portfolio constr
 
 ### Data
 
-- **Historical daily bars**: local Tongdaxin ipdoc day files (.day); the directory is configured via user_config.json → TDX_CONFIG.tdx_dir, env TDX_DIR, the UI "Tongdaxin directory" field, or --tdx-dir (no hard-coded drive letter).
+- **Historical daily bars**: local Tongdaxin 
+ipdoc day files (.day); the directory is configured via user_config.json → TDX_CONFIG.tdx_dir, env TDX_DIR, the UI "Tongdaxin directory" field, or --tdx-dir (no hard-coded drive letter).
 - **Market cap**: day files have no cap fields; total / free-float cap = shares from T0002/hq_cache/gbbq (in 10k shares) × close (needs pytdx; see src/data/tdx_gbbq.py).
 - **Fundamentals**: multi-source akshare merge (Sina financials primarily, Eastmoney / Tonghuashun cross-fill), with computed PE/PB and next-period return labels; parquet caches (e.g. data/cache_hs300, data/cache_all_a).
 - **Universe**: UI can build CSI 300 or all A-shares into hs300.txt / ll_a.txt via akshare (Eastmoney spot → exchange code table → Sina spot fallbacks; **does not** scan local Tongdaxin day files for tickers).
@@ -204,8 +204,10 @@ Design notes, file list, pitfalls, and CLI examples: **[A股改造说明.md](A�
 
 ### FinRL rolling DRL (full train & infer)
 
-Unlike the short-train UI drl (share_drl_runner), inrl_rolling_drl **fully ports** upstream 
-l_model.run_models + undamental_portfolio_drl.main:
+Unlike the short-train UI drl (share_drl_runner), 
+inrl_rolling_drl **fully ports** upstream 
+l_model.run_models + 
+undamental_portfolio_drl.main:
 
 1. Build an A-share OHLCV panel from Tongdaxin/akshare caches (6-digit codes)  
 2. Technical indicators + rolling covariance features  
