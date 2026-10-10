@@ -31,7 +31,7 @@
 
 ## A股改版能力与特色
 
-> 本仓库面向开源发布为 **FinRL-A-Trading**（GitHub: ihaiyouyou/-FinRL-A-Trading）。
+> 本仓库面向开源发布为 **FinRL-A-Trading**（GitHub: hyqibot/FinRL-A-Trading）。
 > 基于上游 [AI4Finance-Foundation/FinRL-Trading](https://github.com/AI4Finance-Foundation/FinRL-Trading)（Apache-2.0）衍生改造；保留原许可证全文。A 股数据/券商/界面为本地扩展，与上游美股默认路径并存。
 
 
