@@ -124,6 +124,105 @@ python -m pip install "finrl" -i https://pypi.tuna.tsinghua.edu.cn/simple
 界面：A股实盘 / 策略回测 → 策略族 **FinRL滚动DRL** 或用例4。首次建议 `max_stocks=5`、`timesteps=2000`、`max_windows=1` 试跑。
 
 
+## A-Share Edition: Capabilities & Highlights
+
+> This repository is published as **FinRL-A-Trading** (GitHub: [hyqibot/FinRL-A-Trading](https://github.com/hyqibot/FinRL-A-Trading)).
+> It is a derivative of upstream [AI4Finance-Foundation/FinRL-Trading](https://github.com/AI4Finance-Foundation/FinRL-Trading) (Apache-2.0); the original license text is retained. A-share data, brokers, and UI are local extensions that coexist with the upstream U.S.-equity defaults.
+
+
+Built on FinRL-Trading / FinRL-X, this repo adds an **A-share localization layer**: the strategy layer still centers on a target-weights contract for reuse, while data, execution, and the Streamlit UI are adapted to A-share conventions. Details: [A股改造说明.md](A股改造说明.md).
+
+### Positioning
+
+An A-share adaptation of FinRL-Trading—keeping weight-centric portfolio construction, while market data / fundamentals, universes, order routing, and Web pages are usable in a China-market setup.
+
+### Data
+
+- **Historical daily bars**: local Tongdaxin ipdoc day files (.day); the directory is configured via user_config.json → TDX_CONFIG.tdx_dir, env TDX_DIR, the UI "Tongdaxin directory" field, or --tdx-dir (no hard-coded drive letter).
+- **Market cap**: day files have no cap fields; total / free-float cap = shares from T0002/hq_cache/gbbq (in 10k shares) × close (needs pytdx; see src/data/tdx_gbbq.py).
+- **Fundamentals**: multi-source akshare merge (Sina financials primarily, Eastmoney / Tonghuashun cross-fill), with computed PE/PB and next-period return labels; parquet caches (e.g. data/cache_hs300, data/cache_all_a).
+- **Universe**: UI can build CSI 300 or all A-shares into hs300.txt / ll_a.txt via akshare (Eastmoney spot → exchange code table → Sina spot fallbacks; **does not** scan local Tongdaxin day files for tickers).
+- **Live quotes**: easyquotation first, then akshare spot on failure.
+
+### Strategies (A-share Live page / share_strategy_runner)
+
+Three README-style presets:
+
+1. **Portfolio allocation paradigm** — equal weight by default; can switch to min-variance / mean-variance / market-cap / DRL  
+2. **Rolling stock selection + DRL** — ml_then_drl (rolling ML selection, then DRL weights)  
+3. **Adaptive multi-asset rotation** — daptive_rotation (A-share proxy indices + sector groups; needs PyYAML)
+
+Also available: equal weight, min-variance, mean-variance, market-cap (Tongdaxin gbbq), ML selection, sector-neutral ML, bucketed ML, pure DRL (A2C/PPO/DDPG), and custom strategies (user .py with a class that implements generate_weights).
+
+Common ML knobs (UI): prediction_mode (single/rolling), weight_method, 	rain_quarters / 	est_quarters, 	op_quantile, confirm_mode, etc. Sector-aware families load industry maps; market-cap weighting can use total or free-float cap.
+
+### Execution
+
+- Executor: share_executor.py + easytrader (THS / Xueqiu / miniQMT and other clients, per UI / executor options).
+- **Dry-run by default**; live broker orders only after explicit confirmation on the live path.
+- **Sell**: size from sellable holdings (odd lots allowed), not forced to multiples of 100; **buy** still round-lot 100.
+- Orders respect T+1 sellability; live flow usually sells before buys.
+
+### UI pages
+
+Streamlit (src/web/app.py) sidebar in A-share Chinese labels:
+
+| Page | Summary |
+|:---|:---|
+| Overview | Universe / Tongdaxin / caches and illustrative NAV (CNY) |
+| Data management | hs300 / ll_a and caches; U.S. WRDS/FMP marked disabled |
+| Strategy backtesting | A-share strategy-family backtest entry |
+| Performance analysis | Backtest NAV and weights |
+| Settings | Tongdaxin path, broker path, Caixin/CLS and OpenAI, etc. |
+| A-share Live | Universe build, presets/strategies/params, run selection, per-ticker CLS news |
+
+### News sentiment
+
+- Caixin/CLS telegraph (src/data/cls_news.py, config CLS_CONFIG in user_config.json); **not FMP**.
+- Same usage pattern as upstream: pick tickers, fetch, label **each article** positive / neutral / negative (GPT if OPENAI_API_KEY is set, else Chinese lexicon rules).
+- Results are for display and on-disk dump only (e.g. data/cls_news/); **not** written as selection features and **not** used to tilt weights.
+- Limit: CLS has no official per-ticker news API; implementation pulls telegraphs, filters by date, then matches the ticker's **6-digit code or full exchange name** (full name length ≥ 4).
+
+### Environment & dependencies
+
+- Use the project **venv**, Python **3.11+**; install from this repo's 
+equirements.txt.
+- Mainland China mirrors (e.g. Tsinghua) are fine; **do not** upgrade or pollute the machine Anaconda base.
+- Optional: stable-baselines3 + gymnasium for SB3 DRL; without them DRL can fall back to torch REINFORCE.
+- Market-cap weighting needs gbbq under the Tongdaxin directory and pytdx installed.
+
+### More documentation
+
+Design notes, file list, pitfalls, and CLI examples: **[A股改造说明.md](A股改造说明.md)**. Upstream English docs (architecture, original three use cases, Alpaca Quick Start, etc.) remain below for comparison.
+
+---
+
+
+
+
+### FinRL rolling DRL (full train & infer)
+
+Unlike the short-train UI drl (share_drl_runner), inrl_rolling_drl **fully ports** upstream 
+l_model.run_models + undamental_portfolio_drl.main:
+
+1. Build an A-share OHLCV panel from Tongdaxin/akshare caches (6-digit codes)  
+2. Technical indicators + rolling covariance features  
+3. Quarterly/monthly rebalance: train A2C/PPO/DDPG (optional TD3/SAC) → pick best by test-window cumulative return → infer weights in the trade window  
+4. Persist models/results: rtifacts/ashare_drl/models/<YYYYMMDD>/<algo>.zip, 
+esults/drl_weight.csv, latest_weights.csv, progress.json (resumable)
+
+Dependencies (project venv; leave Anaconda base alone):
+
+`powershell
+python -m pip install "stable-baselines3>=2.0.0" "gymnasium>=0.29.0" "stockstats>=0.5.0" "PyPortfolioOpt>=1.5.0" -i https://pypi.tuna.tsinghua.edu.cn/simple
+# Optional official FinRL (repo ships a compatible env/agent; not required to run):
+python -m pip install "finrl" -i https://pypi.tuna.tsinghua.edu.cn/simple
+`
+
+UI: A-share Live / Strategy backtesting → strategy family **FinRL滚动DRL** or use case 4. First run tip: max_stocks=5, 	imesteps=2000, max_windows=1.
+
+
+
 ## About
 
 **FinRL-X** is a next-generation, **AI-native** quantitative trading infrastructure that redefines how researchers and practitioners build, test, and deploy algorithmic trading strategies. 
